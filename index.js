@@ -105,25 +105,13 @@ function addDepartment(p_response) {
 
 async function addRole(p_response) {
 
-    const insert = `INSERT INTO roleTable (title, salary, department_id) VALUES ("${p_response.name}", ${p_response.salary}, "${p_response.department}")`
-
-    console.log(insert);
-    db.query(addRole(insert),
-        function (err, results) {
-            if (err) throw err;
-        })
+    return `INSERT INTO roleTable (title, salary, department_id) VALUES ("${p_response.name}", ${p_response.salary}, "${p_response.department}")`
 }
 
 async function addEmployee(p_response) {
-    const insert = `INSET INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ("${p_response.nameFirst}", "${p_response.nameFirst}", "${p_response.role}, "${p_response.manager}")`
+    return `INSET INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ("${p_response.nameFirst}", "${p_response.nameFirst}", "${p_response.role}, "${p_response.manager}")`
 
-    console.log(insert);
-    db.query(addEmployee(insert),
-    function (err, results) {
-        if (err) throw err;
-    })
 }
-
 function updateEmployeeRole(p_response) {
     //${p_response.role} should be a number not a string
     return `UPDATE employeeTable SET role = "${p_response.name}" WHERE id=${p_response.role}`
@@ -137,60 +125,76 @@ async function menu() {
         const menuResponse = await inquirer.prompt(menuQ)
         console.log("menu: " + menuResponse);
         console.log("menu.action: " + menuResponse.action);
-      
+
 
         switch (menuResponse.action) {
 
             case 'View all departments':
-                db.query('SELECT * FROM departmentTable', function (err, results) {
-                    console.log(results);
-                });
+                db.query('SELECT * FROM departmentTable',
 
+                    function (err, results) {
+                        console.log(results);
+                    });
                 break;
+
             case 'View all roles':
-                db.query('SELECT * FROM roleTable', function (err, results) {
+                db.query('SELECT * FROM roleTable',
+
+                    function (err, results) {
+                        console.log(results);
+                    });
+                break;
+
+            case 'View all employees': db.query('SELECT * FROM students',
+
+                function (err, results) {
                     console.log(results);
                 });
-
-                break;
-            case 'View all employees':
-                db.query('SELECT * FROM students', function (err, results) {
-                    console.log(results);
-                });
-                break;
-            case 'Add a department':
-                inquirer.prompt(addDepartmentQ).then((data) => {
-                    
-                    db.query(addDepartment(data),
-                        function (err, results) {
-                            if (err) throw err;
-                        })
-                })
                 break;
 
-            case 'Add a role':
-                const ARresponse = await inquirer.prompt(addRoleQ)
-                addRole(ARresponse);
+            case 'Add a department': const responseAD = await inquirer.prompt(addDepartmentQ)
+
+                db.query(addDepartment(responseAD),
+                    function (err, results) {
+                        if (err) throw err;
+                    })
                 break;
 
-            case 'Add an employee':
-                const AEresponse = await inquirer.prompt(addEmployeeQ)
-                addEmployee(AEresponse);    
+            case 'Add a role': const responseAR = await inquirer.prompt(addRoleQ)
+
+                db.query(addRole(responseAR),
+                    function (err, results) {
+                        if (err) throw err;
+                    })
+                break;
+
+            case 'Add an employee': const responseAE = await inquirer.prompt(addEmployeeQ)
+
+                db.query(addEmployee(responseAE),
+                    function (err, results) {
+                        if (err) throw err;
+                    })
                 break;
 
             case 'Update an employee role':
-                inquirer.prompt(updateEmployeeRoleQ)
-                    .then((response) => {
-                        db.query(updateEmployeeRole(response),
-                            function (err, results) {
-                                if (err) throw err;
-                            })
+                const responseUER = await inquirer.prompt(updateEmployeeRoleQ)
+
+                db.query(updateEmployeeRole(responseUER),
+                    function (err, results) {
+                        if (err) throw err;
                     })
                 break;
-            case 'Exit':
-
-                return;
+                
+            case 'Exit': return;
         }
     } while (true);
 }
-menu()
+
+function init() {
+    db.query(`mysql schema.sql`)
+    
+    menu();
+
+}
+
+init();
