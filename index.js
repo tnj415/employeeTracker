@@ -14,6 +14,7 @@ const db = mysql.createConnection(
     },
     // console.log(`Connected to the employee_db database.`)
 );
+
 db.connect((err) => {
     if (err)
         console.log(err);
@@ -109,36 +110,31 @@ async function addRole(p_response) {
 }
 
 async function addEmployee(p_response) {
-    return `INSET INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ("${p_response.nameFirst}", "${p_response.nameFirst}", "${p_response.role}, "${p_response.manager}")`
+    return `INSET INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ('${p_response.nameFirst}', '${p_response.nameFirst}', '${p_response.role}', '${p_response.manager}')`
 
 }
-function updateEmployeeRole(p_response) {
+async function updateEmployeeRole(p_response) {
     //${p_response.role} should be a number not a string
-    return `UPDATE employeeTable SET role = "${p_response.name}" WHERE id=${p_response.role}`
+    return `UPDATE employeeTable SET role = '${p_response.name}' WHERE id=${p_response.role}`
 }
 
 async function menu() {
 
-
-
-    do {
+    // do {
         const menuResponse = await inquirer.prompt(menuQ)
         console.log("menu: " + menuResponse);
         console.log("menu.action: " + menuResponse.action);
 
-
         switch (menuResponse.action) {
 
-            case 'View all departments':
-                db.query('SELECT * FROM departmentTable',
+            case 'View all departments': db.query('SELECT * FROM departmentTable',
 
                     function (err, results) {
                         console.log(results);
                     });
                 break;
 
-            case 'View all roles':
-                db.query('SELECT * FROM roleTable',
+            case 'View all roles': db.query('SELECT * FROM roleTable',
 
                     function (err, results) {
                         console.log(results);
@@ -150,8 +146,7 @@ async function menu() {
                 function (err, results) {
                     console.log(results);
                 });
-                break;
-
+                
             case 'Add a department': const responseAD = await inquirer.prompt(addDepartmentQ)
 
                 db.query(addDepartment(responseAD),
@@ -176,8 +171,7 @@ async function menu() {
                     })
                 break;
 
-            case 'Update an employee role':
-                const responseUER = await inquirer.prompt(updateEmployeeRoleQ)
+            case 'Update an employee role': const responseUER = await inquirer.prompt(updateEmployeeRoleQ)
 
                 db.query(updateEmployeeRole(responseUER),
                     function (err, results) {
@@ -186,15 +180,16 @@ async function menu() {
                 break;
                 
             case 'Exit': return;
+
+            default: break;
         }
-    } while (true);
+    // } while (true);
 }
 
 function init() {
-    db.query(`mysql schema.sql`)
+    // db.query(`mysql schema.sql`)
     
     menu();
-
 }
 
 init();
