@@ -2,7 +2,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 
-
 const db = mysql.createConnection(
     {
         host: 'localhost',
@@ -22,24 +21,60 @@ db.connect((err) => {
         console.log("connected to MySQL");
 });
 
-const menuQ = [
-    {
-        type: 'list',
-        name: 'action',
-        message: 'What would you like to do?',
-        choices: [
-            'View all departments',
-            'View all roles',
-            'View all employees',
-            'Add a department',
-            'Add a role',
-            'Add an employee',
-            'Update an employee role',
-            'Exit'
-        ]
-    }
-]
-const addDepartmentQ = [
+async function menu() {
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+                {
+                    name: 'View all departments',
+                    value: [view, 'deptT']
+                },
+                {
+                    name: 'View all roles',
+                    value: [view, 'roleT']
+                },
+                {
+                    name: 'View all employees',
+                    value: [view, 'emT']
+                },
+                {
+                    name: 'Add a department',
+                    value: [add, 'deptT']
+                },
+                {
+                    name: 'Add a role',
+                    value: [add, 'roleT']
+                },
+                {
+                    name: 'Add an employee',
+                    value: [add, 'emT']
+                },
+                {
+                    name: 'Update an employee role',
+                    value: [update]
+                },
+                {
+                    name: 'Exit',
+                    value: () => exit(0)
+                }
+            ]
+        }
+    ])
+        .then((response) => {
+
+
+            response.action.length === 2 ?
+                response.action[0](response.action[1]) :
+                response.action[0]()
+        })
+        .then(() => {
+            menu()
+        })
+}
+const addDeptQ = [
     {
         type: 'input',
         name: 'name',
@@ -63,7 +98,7 @@ const addRoleQ = [
         message: 'Enter the department of the role:'
     }
 ]
-const addEmployeeQ = [
+const addEmQ = [
     {
         type: 'input',
         name: 'nameFirst',
@@ -85,7 +120,7 @@ const addEmployeeQ = [
         message: 'Enter the employee\'s manager:'
     }
 ]
-const updateEmployeeRoleQ = [
+const updateQ = [
     {
         type: 'list',
         name: 'name',
@@ -100,112 +135,75 @@ const updateEmployeeRoleQ = [
     }
 ]
 
-function addDepartment(p_response) {
-    return `INSERT INTO departmentTable (name)
-            VALUES ('${p_response.name}')`
+function view(tableName) {
+
+    db.query(`SELECT * FROM ${tableName}`,
+
+        function (err, results) {
+            if (err) return console.log(err);
+            console.table(results)
+        });
 }
 
-function addRole(p_response) {
+function add(tableName) {
+    // var input = '';
+    console.log("Entered add function")
+    switch (tableName) {
 
-    return `INSERT INTO roleTable (title, salary, department_id) VALUES ('${p_response.name}', ${p_response.salary}, '${p_response.department}')`
+        case 'deptT':
+            console.log("Entered case deptT")
+            inquirer.prompt(addDeptQ)
+                .then((response) => {
+                    console.log("Entered .then")
+                    const inputD = `INSERT INTO deptT (name)
+                VALUES ('${response.name}')`
+
+                    db.query(inputD)
+
+
+                })
+
+
+            break;
+
+        case 'roleT':
+            inquirer.prompt(addRoleQ)
+                .then((response) => {
+
+                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.name}', ${response.salary}, '${response.department}')`
+
+                    db.query(inputR)
+
+                })
+
+            break;
+        case 'empT':
+            inquirer.prompt(addEmQ)
+                .then((response) => {
+
+                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.nameFirst}', '${response.nameFirst}', '${response.role}', '${response.manager}')`
+
+                    db.query(inputE)
+
+                })
+            break;
+
+    }
 }
 
-function addEmployee(p_response) {
-    return `INSERT INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ('${p_response.nameFirst}', '${p_response.nameFirst}', '${p_response.role}', '${p_response.manager}')`
+function update() {
 
-}
-function updateEmployeeRole(p_response) {
-    //${p_response.role} should be a number not a string
-    return `UPDATE employeeTable SET role = '${p_response.name}' WHERE id=${p_response.role}`
-}
-
-async function menu() {
-
-  
-        const menuResponse = await inquirer.prompt(menuQ)
-        console.log("menu: " + menuResponse);
-        console.log("menu.action: " + menuResponse.action);
-
-        switch (menuResponse.action) {
-
-            case 'View all departments': db.query('SELECT * FROM departmentTable',
-
-                    function (err, results) {
-                        console.log(results);
-                    });
-
-                    menu();
-                break;
-
-            case 'View all roles': db.query('SELECT * FROM roleTable',
-
-                    function (err, results) {
-                        console.log(results);
-                    });
-
-                    menu();
-                break;
-
-            case 'View all employees': db.query('SELECT * FROM students',
+    inquirer.prompt(updateQ)
+        .then((response) => {
+            db.query(
+                `UPDATE empT SET role = '${response.name}' WHERE id=${response.role}`,
 
                 function (err, results) {
-                    console.log(results);
-                });
+                    if (err) return reject(err);
+                }
+            )
+        })
 
-                menu();
-                break;
-                
-            case 'Add a department': const responseAD = await inquirer.prompt(addDepartmentQ)
-
-                db.query(addDepartment(responseAD),
-                    function (err, results) {
-                        if (err) throw err;
-                    })
-
-                    menu();
-                break;
-
-            case 'Add a role': const responseAR = await inquirer.prompt(addRoleQ)
-
-                db.query(addRole(responseAR),
-                    function (err, results) {
-                        if (err) throw err;
-                    })
-
-                    menu();
-                break;
-
-            case 'Add an employee': const responseAE = await inquirer.prompt(addEmployeeQ)
-
-                db.query(addEmployee(responseAE),
-                    function (err, results) {
-                        if (err) throw err;
-                    })
-
-                    menu();
-                break;
-
-            case 'Update an employee role': const responseUER = await inquirer.prompt(updateEmployeeRoleQ)
-
-                db.query(updateEmployeeRole(responseUER),
-                    function (err, results) {
-                        if (err) throw err;
-                    })
-
-                    menu();
-                break;
-                
-            case 'Exit': return;
-
-            default: break;
-        }
-   
 }
 
-function init() {
-    // db.query(`mysql schema.sql`)
-    
-    menu();
-}
-
-init();
+menu();
