@@ -1,4 +1,4 @@
-const express = require('express');
+// const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 
@@ -21,6 +21,7 @@ db.connect((err) => {
     else
         console.log("connected to MySQL");
 });
+
 const menuQ = [
     {
         type: 'list',
@@ -28,7 +29,7 @@ const menuQ = [
         message: 'What would you like to do?',
         choices: [
             'View all departments',
-            'View all departments',
+            'View all roles',
             'View all employees',
             'Add a department',
             'Add a role',
@@ -104,23 +105,23 @@ function addDepartment(p_response) {
             VALUES ('${p_response.name}')`
 }
 
-async function addRole(p_response) {
+function addRole(p_response) {
 
-    return `INSERT INTO roleTable (title, salary, department_id) VALUES ("${p_response.name}", ${p_response.salary}, "${p_response.department}")`
+    return `INSERT INTO roleTable (title, salary, department_id) VALUES ('${p_response.name}', ${p_response.salary}, '${p_response.department}')`
 }
 
-async function addEmployee(p_response) {
-    return `INSET INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ('${p_response.nameFirst}', '${p_response.nameFirst}', '${p_response.role}', '${p_response.manager}')`
+function addEmployee(p_response) {
+    return `INSERT INTO employeeTable (nameFirst, nameLast, role, manager) VALUES ('${p_response.nameFirst}', '${p_response.nameFirst}', '${p_response.role}', '${p_response.manager}')`
 
 }
-async function updateEmployeeRole(p_response) {
+function updateEmployeeRole(p_response) {
     //${p_response.role} should be a number not a string
     return `UPDATE employeeTable SET role = '${p_response.name}' WHERE id=${p_response.role}`
 }
 
 async function menu() {
 
-    // do {
+  
         const menuResponse = await inquirer.prompt(menuQ)
         console.log("menu: " + menuResponse);
         console.log("menu.action: " + menuResponse.action);
@@ -132,6 +133,8 @@ async function menu() {
                     function (err, results) {
                         console.log(results);
                     });
+
+                    menu();
                 break;
 
             case 'View all roles': db.query('SELECT * FROM roleTable',
@@ -139,6 +142,8 @@ async function menu() {
                     function (err, results) {
                         console.log(results);
                     });
+
+                    menu();
                 break;
 
             case 'View all employees': db.query('SELECT * FROM students',
@@ -146,6 +151,9 @@ async function menu() {
                 function (err, results) {
                     console.log(results);
                 });
+
+                menu();
+                break;
                 
             case 'Add a department': const responseAD = await inquirer.prompt(addDepartmentQ)
 
@@ -153,6 +161,8 @@ async function menu() {
                     function (err, results) {
                         if (err) throw err;
                     })
+
+                    menu();
                 break;
 
             case 'Add a role': const responseAR = await inquirer.prompt(addRoleQ)
@@ -161,6 +171,8 @@ async function menu() {
                     function (err, results) {
                         if (err) throw err;
                     })
+
+                    menu();
                 break;
 
             case 'Add an employee': const responseAE = await inquirer.prompt(addEmployeeQ)
@@ -169,6 +181,8 @@ async function menu() {
                     function (err, results) {
                         if (err) throw err;
                     })
+
+                    menu();
                 break;
 
             case 'Update an employee role': const responseUER = await inquirer.prompt(updateEmployeeRoleQ)
@@ -177,13 +191,15 @@ async function menu() {
                     function (err, results) {
                         if (err) throw err;
                     })
+
+                    menu();
                 break;
                 
             case 'Exit': return;
 
             default: break;
         }
-    // } while (true);
+   
 }
 
 function init() {
