@@ -1,17 +1,26 @@
 INSERT INTO deptT (name)
-VALUES ('test_dep1'),
-        ('test_dep2'),
-        ('test_dep3'),
-        ('test_dep4');
+VALUES ('Sales'),
+        ('Engineering'),
+        ('Finance'),
+        ('Legal');
 
-INSERT INTO roleT ( title, salary, department_id)
-VALUES ('test_title1', 1.1, 1),
-        ('test_title2', 2.2, 2),
-        ('test_title3', 3.3, 3),
-        ('test_title4', 4.4, 4);
+INSERT INTO roleT (title, salary, department_id)
+VALUES ('Sales Lead', 100000, 1),
+        ('Salesperson', 80000, 1),
+        ('Lead Engineer', 150000, 2),
+        ('Software Engineer', 120000, 2),
+        ('Account Manager', 16000, 3),
+        ('Accountant', 125000, 3),
+        ('Legal Team Lead', 250000, 4),
+        ('Lawyer', 190000, 4);
 
 INSERT INTO emT (first_name, last_name, role_id, manager_id)
-VALUES ('test_first_name1', 'test_last_name1', 1, null),
-        ('test_first_name2', 'test_last_name2', 2, 1),
-        ('test_first_name3', 'test_last_name3', 3, 1),
-        ('test_first_name4', 'test_last_name4', 4, 1);
+VALUES ('John', 'Doe', 1, null),
+        ('Mike', 'Chan', 2, 1),
+        ('Ashley', 'Rodriguez', 3, null),
+        ('Kelvin', 'Tupik', 4, 3),
+        ('Kunal', 'Singh', 5, null),
+        ('Malia', 'Brown', 6, 5),
+        ('Sarah', 'Lourd', 7, null),
+        ('Tom', 'Allen', 8, 7);
+     

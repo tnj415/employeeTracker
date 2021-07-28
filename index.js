@@ -17,13 +17,18 @@ const db = mysql.createConnection(
 db.connect((err) => {
     if (err)
         console.log(err);
-    else{
+    else {
         console.log("connected to MySQL");
     }
 });
 
 
 async function menu() {
+
+    getEmployees();
+    getRoles();
+    getDepartments();
+
     inquirer.prompt([
         {
             type: 'list',
@@ -70,56 +75,61 @@ async function menu() {
             response.action.length === 2 ?
                 response.action[0](response.action[1]) :
                 response.action()
-               
+
 
         })
 
 }
 
-const addDeptQ = [
+var addDeptQ = [
     {
-        type: 'input',
+        type: 'list',
         name: 'name',
-        message: 'Enter the name of the department:'
+        message: 'Select the name of the department: ',
+        choices: []
     }
 ]
-const addRoleQ = [
+var addRoleQ = [
     {
-        type: 'input',
+        type: 'list',
         name: 'name',
-        message: 'Enter the name of the role:'
+        message: 'Select the name of the role: ',
+        choices: []
     },
     {
         type: 'input',
         name: 'salary',
-        message: 'Enter the salary of the role'
+        message: 'Enter the salary of the role: '
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'department',
-        message: 'Enter the department of the role:'
+        message: 'Select the department of the role: ',
+        choices: []
     }
 ]
-const addEmQ = [
+var addEmQ = [
     {
         type: 'input',
         name: 'nameFirst',
-        message: 'Enter the employee\'s first name:'
+        message: 'Enter the employee\'s first name: '
     },
     {
         type: 'input',
         name: 'nameLast',
-        message: 'Enter the employee\'s last name:'
+        message: 'Enter the employee\'s last name: '
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'role',
-        message: 'Enter the employee\'s role:'
+        message: 'Select the employee\'s role: ',
+        choices: []
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'manager',
-        message: 'Enter the employee\'s manager:'
+        message: 'Select the employee\'s manager: ',
+        choices: []
     }
 ]
 
@@ -127,24 +137,62 @@ var updateQ = [
     {
         type: 'list',
         name: 'name',
-        message: 'Select an employee:',
+        message: 'Select an employee: ',
         choices: []
 
     },
     {
         type: 'list',
         name: 'role',
-        message: 'select a role:',
+        message: 'select a role: ',
         choices: []
     }
 ]
 
+var managerList = []
+
 function view(tableName) {
 
-    db.query(`SELECT * FROM ${tableName}`,
+    var input = '';
+
+    switch (tableName) {
+
+        case 'deptT':
+            input =
+                `SELECT * FROM ${tableName}`;
+
+            break;
+
+        case 'roleT':
+
+            input =
+                `SELECT id, title, salary
+        FROM roleT`;
+
+            break;
+        case 'emT':
+
+
+            input =
+                `SELECT emT.id, emT.first_name, emT.last_name, roleT.title, deptT.name AS department, roleT.salary
+            FROM emT
+            JOIN roleT
+            ON emT.role_id = roleT.id
+            JOIN deptT
+            ON roleT.department_id = deptT.id`;
+
+
+
+            break;
+
+    }
+
+
+    db.query(input,
 
         function (err, results) {
             if (err) return console.log(err);
+            console.log()
             console.table(results)
         })
 
@@ -156,7 +204,7 @@ function add(tableName) {
     switch (tableName) {
 
         case 'deptT':
-            
+
             inquirer.prompt(addDeptQ)
                 .then((response) => {
 
@@ -187,7 +235,7 @@ function add(tableName) {
                 })
 
             break;
-        case 'empT':
+        case 'emT':
             inquirer.prompt(addEmQ)
                 .then((response) => {
 
@@ -204,67 +252,94 @@ function add(tableName) {
     }
 }
 
-async function getEmployees () {
+async function getEmployees() {
 
-    const select = `SELECT id, last_name, first_name FROM emT `;
-    let fullName = []
+    const select = `SELECT id, last_name, first_name, manager_id FROM emT `;
+    let employeeArr = []
+    let managerArr = []
     const selection = await db.promise().execute(select);
-    const rows= selection[0];
+    const rows = selection[0];
     //console.log(rows);
     for (let i in rows) {
         const q = {
             name: rows[i].last_name + ' ' + rows[i].first_name,
             value: rows[i].id
         }
-        fullName.push (q);
+        employeeArr.push(q);
+
+        const r = {
+            name: rows[i].id,
+            value: rows[i].last_name + ' ' + rows[i].first_name
+        }
+        if (rows[i] === null) managerArr.push(r)
+        if(managerList[i] !== r[1]) managerList.push(r[1])
     }
     // console.log (list);
-
-    return fullName;
+    addEmQ[3].choices = managerArr;
+    updateQ[0].choices = employeeArr;
 }
 
-async function getRoles () {
+async function getRoles() {
 
     const select = `SELECT id, title FROM roleT `;
     let roleArr = []
     const selection = await db.promise().execute(select);
-    const rows= selection[0];
+    const rows = selection[0];
     //console.log(rows);
     for (let i in rows) {
         const q = {
             name: rows[i].title,
             value: rows[i].id
         }
-        roleArr.push (q);
+        roleArr.push(q);
     }
-   /// console.log (list);
+    /// console.log (list);
 
-    return roleArr;
+    addEmQ[2].choices = roleArr;
+    addRoleQ[0].choices = roleArr;
+    updateQ[1].choices = roleArr;
+}
+
+async function getDepartments() {
+
+    const select = `SELECT id, name FROM deptT `;
+    let roleArr = []
+    const selection = await db.promise().execute(select);
+    const rows = selection[0];
+    //console.log(rows);
+    for (let i in rows) {
+        const q = {
+            name: rows[i].title,
+            value: rows[i].id
+        }
+        roleArr.push(q);
+    }
+    /// console.log (list);
+
+    addRoleQ[2].choices = roleArr;
+    addDeptQ[0].choices = roleArr;
+    updateQ[1].choices = roleArr;
 }
 
 async function update() {
 
-
-updateQ[0].choices= await getEmployees();
-updateQ[1].choices= await getRoles();
-
     inquirer.prompt(updateQ)
         .then((response) => {
-            
-            const update =  `UPDATE emT SET role_id = ${response.role} WHERE id =${response.name}`;
-            
-            db.query( update,
+
+            const update = `UPDATE emT SET role_id = ${response.role} WHERE id =${response.name}`;
+
+            db.query(update,
 
                 function (err, results) {
-    
+
                     if (err) {
                         console.log(err);
                     }
                 }
             )
         })
-        
- .then(() => {menu();})
+
+        .then(() => { menu(); })
 }
 
 menu();
