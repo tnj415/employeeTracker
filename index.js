@@ -303,7 +303,7 @@ async function getRoles() {
         }
         roleArr.push(q);
     }
-    /// console.log (list);
+    /// console.log (roleArr);
 
     addEmQ[2].choices = roleArr;
     addRoleQ[0].choices = roleArr;
@@ -313,24 +313,24 @@ async function getRoles() {
 async function getDepartments() {
 
     const select = `SELECT id, name FROM deptT `;
-    let roleArr = []
+    let deptArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
-    console.log(rows);
+    //console.log(rows);
     for (let i in rows) {
         const q = {
-            name: rows[i].title,
+            name: rows[i].name,
             value: rows[i].id
         }
-        roleArr.push(q);
+        deptArr.push(q);
     }
     
-    addRoleQ[2].choices = roleArr;
-    addDeptQ[0].choices = roleArr;
-    updateQ[1].choices = roleArr;
-    console.log("roleArr: ", roleArr);
-    console.log("addDeptQ[0]: ", addDeptQ[0])
-    console.log("addDeptQ[0].choices: ", addDeptQ[0].choices)
+    addRoleQ[2].choices = deptArr;
+    addDeptQ[0].choices = deptArr;
+    updateQ[1].choices = deptArr;
+    // console.log("roleArr: ", roleArr);
+    // console.log("addDeptQ[0]: ", addDeptQ[0])
+    // console.log("addDeptQ[0].choices: ", addDeptQ[0].choices)
 }
 
 async function update() {
