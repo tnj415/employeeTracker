@@ -83,10 +83,9 @@ async function menu() {
 
 var addDeptQ = [
     {
-        type: 'list',
+        type: 'input',
         name: 'name',
-        message: 'Select the name of the department: ',
-        choices: []
+        message: 'Enter the name of the department: '
     }
 ]
 var addRoleQ = [
@@ -225,7 +224,7 @@ function add(tableName) {
             inquirer.prompt(addRoleQ)
                 .then((response) => {
 
-                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.name}', ${response.salary}, '${response.department}')`
+                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
 
                     db.query(inputR)
 
@@ -261,26 +260,31 @@ async function getEmployees() {
     const rows = selection[0];
     //console.log(rows);
     for (let i in rows) {
-        const q = {
-            name: rows[i].last_name + ' ' + rows[i].first_name,
-            value: rows[i].id
-        }
-        employeeArr.push(q);
 
-        const r = {
-            name: rows[i].last_name + ' ' + rows[i].first_name,
-            value: rows[i].id
-        }
-        if (rows[i] === null) managerArr.push(r)
+        employeeArr.push(rows[i].last_name + ' ' + rows[i].first_name)
 
-        if (managerList.length === 0 ||
-            i > 0 && managerList[i - 1].value !== r.value) {
-            managerList.push(r)
+        if (rows[i].manager_id === null) 
+            managerArr.push(rows[i].last_name + ' ' + rows[i].first_name)
+        // const q = {
+        //     name: rows[i].last_name + ' ' + rows[i].first_name,
+        //     value: rows[i].id
+        // }
+        // employeeArr.push(q);
+
+        // const r = {
+        //     name: rows[i].last_name + ' ' + rows[i].first_name,
+        //     value: rows[i].id
+        // }
+        // if (rows[i].manager_id === null) managerArr.push(r)
+
+        // if (managerList.length === 0 ||
+        //     i > 0 && managerList[i - 1].value !== r.value) {
+        //     managerList.push(r)
             // console.log("r.value = ", r.value)
             // console.log("managerList[" + i + "] = ", managerList[i])
             // console.log("managerList[" + i + "].name = ", managerList[i].name)
             // console.log("managerList[" + i + "].value = ", managerList[i].value)
-        }
+        //}
     }
     // console.log (list);
     // console.log("managerList[i] === ", managerList[i])
@@ -297,11 +301,12 @@ async function getRoles() {
     const rows = selection[0];
     //console.log(rows);
     for (let i in rows) {
-        const q = {
-            name: rows[i].title,
-            value: rows[i].id
-        }
-        roleArr.push(q);
+        // const q = {
+        //     name: rows[i].title,
+        //     value: rows[i].id
+        // }
+        // roleArr.push(q);
+        roleArr.push(rows[i].title)
     }
     /// console.log (roleArr);
 
@@ -318,11 +323,12 @@ async function getDepartments() {
     const rows = selection[0];
     //console.log(rows);
     for (let i in rows) {
-        const q = {
-            name: rows[i].name,
-            value: rows[i].id
-        }
-        deptArr.push(q);
+        //const q = {
+            //name: rows[i].name,
+            //value: rows[i].id
+       // }
+        //deptArr.push(q);
+        deptArr.push(rows[i].name);
     }
     
     addRoleQ[2].choices = deptArr;
