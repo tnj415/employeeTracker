@@ -173,12 +173,15 @@ function view(tableName) {
 
 
             input =
-                `SELECT emT.id, emT.first_name, emT.last_name, roleT.title, deptT.name AS department, roleT.salary
+                `SELECT emT.id, emT.first_name, emT.last_name, roleT.title, deptT.name AS department, roleT.salary, CONCAT(emT.first_name, ' ', emT.last_name) AS 'Manager'
             FROM emT
             JOIN roleT
             ON emT.role_id = roleT.id
             JOIN deptT
-            ON roleT.department_id = deptT.id`;
+            ON roleT.department_id = deptT.id
+            INNER JOIN emT m
+            ON m.id = emT.manager_id
+            ORDER BY Manager`;
 
 
 
