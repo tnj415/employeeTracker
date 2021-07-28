@@ -17,9 +17,11 @@ const db = mysql.createConnection(
 db.connect((err) => {
     if (err)
         console.log(err);
-    else
+    else{
         console.log("connected to MySQL");
+    }
 });
+
 
 async function menu() {
     inquirer.prompt([
@@ -54,26 +56,26 @@ async function menu() {
                 },
                 {
                     name: 'Update an employee role',
-                    value: [update]
+                    value: update
                 },
                 {
                     name: 'Exit',
-                    value: () => exit(0)
+                    value: () => { return }
                 }
             ]
         }
     ])
         .then((response) => {
 
-
             response.action.length === 2 ?
                 response.action[0](response.action[1]) :
-                response.action[0]()
+                response.action()
+               
+
         })
-        .then(() => {
-            menu()
-        })
+
 }
+
 const addDeptQ = [
     {
         type: 'input',
@@ -120,18 +122,20 @@ const addEmQ = [
         message: 'Enter the employee\'s manager:'
     }
 ]
-const updateQ = [
+
+var updateQ = [
     {
         type: 'list',
         name: 'name',
         message: 'Select an employee:',
-        choices: ['emp1', 'emp2', 'emp3']
+        choices: []
+
     },
     {
         type: 'list',
         name: 'role',
         message: 'select a role:',
-        choices: ['role1', 'role2', 'role3']
+        choices: []
     }
 ]
 
@@ -142,25 +146,28 @@ function view(tableName) {
         function (err, results) {
             if (err) return console.log(err);
             console.table(results)
-        });
+        })
+
+    menu()
 }
 
 function add(tableName) {
-    // var input = '';
-    console.log("Entered add function")
+
     switch (tableName) {
 
         case 'deptT':
-            console.log("Entered case deptT")
+            
             inquirer.prompt(addDeptQ)
                 .then((response) => {
-                    console.log("Entered .then")
+
                     const inputD = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
 
                     db.query(inputD)
 
-
+                })
+                .then(() => {
+                    menu()
                 })
 
 
@@ -175,35 +182,90 @@ function add(tableName) {
                     db.query(inputR)
 
                 })
+                .then(() => {
+                    menu()
+                })
 
             break;
         case 'empT':
             inquirer.prompt(addEmQ)
                 .then((response) => {
 
-                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.nameFirst}', '${response.nameFirst}', '${response.role}', '${response.manager}')`
+                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.nameFirst}', '${response.nameLast}', '${response.role}', '${response.manager}')`
 
                     db.query(inputE)
 
+                })
+                .then(() => {
+                    menu()
                 })
             break;
 
     }
 }
 
-function update() {
+async function getEmployees () {
+
+    const select = `SELECT id, last_name, first_name FROM emT `;
+    let fullName = []
+    const selection = await db.promise().execute(select);
+    const rows= selection[0];
+    //console.log(rows);
+    for (let i in rows) {
+        const q = {
+            name: rows[i].last_name + ' ' + rows[i].first_name,
+            value: rows[i].id
+        }
+        fullName.push (q);
+    }
+    // console.log (list);
+
+    return fullName;
+}
+
+async function getRoles () {
+
+    const select = `SELECT id, title FROM roleT `;
+    let roleArr = []
+    const selection = await db.promise().execute(select);
+    const rows= selection[0];
+    //console.log(rows);
+    for (let i in rows) {
+        const q = {
+            name: rows[i].title,
+            value: rows[i].id
+        }
+        roleArr.push (q);
+    }
+   /// console.log (list);
+
+    return roleArr;
+}
+
+async function update() {
+
+
+updateQ[0].choices= await getEmployees();
+updateQ[1].choices= await getRoles();
 
     inquirer.prompt(updateQ)
         .then((response) => {
-            db.query(
-                `UPDATE empT SET role = '${response.name}' WHERE id=${response.role}`,
+            
+            const update =  `UPDATE emT SET role_id = ${response.role} WHERE id =${response.name}`;
+            
+            db.query( update,
 
                 function (err, results) {
-                    if (err) return reject(err);
+    
+                    if (err) {
+                        console.log(err);
+                    }
                 }
             )
         })
-
+        
+ .then(() => {menu();})
 }
 
 menu();
+ 
