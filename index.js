@@ -268,13 +268,23 @@ async function getEmployees() {
         employeeArr.push(q);
 
         const r = {
-            name: rows[i].id,
-            value: rows[i].last_name + ' ' + rows[i].first_name
+            name: rows[i].last_name + ' ' + rows[i].first_name,
+            value: rows[i].id
         }
         if (rows[i] === null) managerArr.push(r)
-        if(managerList[i] !== r[1]) managerList.push(r[1])
+
+        if (managerList.length === 0 ||
+            i > 0 && managerList[i - 1].value !== r.value) {
+            managerList.push(r)
+            // console.log("r.value = ", r.value)
+            // console.log("managerList[" + i + "] = ", managerList[i])
+            // console.log("managerList[" + i + "].name = ", managerList[i].name)
+            // console.log("managerList[" + i + "].value = ", managerList[i].value)
+        }
     }
     // console.log (list);
+    // console.log("managerList[i] === ", managerList[i])
+    // console.log("managerList[1].value === ", managerList[1].value)
     addEmQ[3].choices = managerArr;
     updateQ[0].choices = employeeArr;
 }
@@ -306,7 +316,7 @@ async function getDepartments() {
     let roleArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
-    //console.log(rows);
+    console.log(rows);
     for (let i in rows) {
         const q = {
             name: rows[i].title,
@@ -314,11 +324,13 @@ async function getDepartments() {
         }
         roleArr.push(q);
     }
-    /// console.log (list);
-
+    
     addRoleQ[2].choices = roleArr;
     addDeptQ[0].choices = roleArr;
     updateQ[1].choices = roleArr;
+    console.log("roleArr: ", roleArr);
+    console.log("addDeptQ[0]: ", addDeptQ[0])
+    console.log("addDeptQ[0].choices: ", addDeptQ[0].choices)
 }
 
 async function update() {
