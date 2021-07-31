@@ -204,8 +204,6 @@ function add(tableName) {
             inquirer.prompt(addDeptQ)
                 .then((response) => {
 
-                    console.log("entered then at deptT")
-
                     const inputD = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
 
@@ -221,8 +219,6 @@ function add(tableName) {
             inquirer.prompt(addRoleQ)
                 .then((response) => {
 
-                    console.log("entered then at roleT")
-
                     const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
 
                     db.query(inputR)
@@ -234,8 +230,6 @@ function add(tableName) {
 
             inquirer.prompt(addEmQ)
             .then((response) => {
-
-                console.log("entered then at emT")
 
                     const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`
 
@@ -303,9 +297,6 @@ async function getDepartments() {
 
 async function update() {
 
-    // getEmployees(); 
-    // getRoles();
-
     inquirer.prompt(updateQ)
         .then((response) => {
 
@@ -325,4 +316,4 @@ async function update() {
         .then(() => { menu(); })
 }
 
-menu();
+//menu();
