@@ -65,7 +65,7 @@ async function menu() {
                 },
                 {
                     name: 'Exit',
-                    value: () => { return }
+                    value: () =>  exit(0) 
                 }
             ]
         }
@@ -147,8 +147,6 @@ var updateQ = [
     }
 ]
 
-//var managerList = []
-
 function view(tableName) {
 
     var input = '';
@@ -157,14 +155,14 @@ function view(tableName) {
 
         case 'deptT':
             input =
-                `SELECT * FROM deptT`;
+                `SELECT deptT.id AS ID, deptT.name AS Department_Name FROM deptT`;
 
             break;
 
         case 'roleT':
 
             input =
-                `SELECT id, title, salary
+                `SELECT id AS ID, title AS Title, salary AS Salary
             FROM roleT`;
 
             break;
@@ -172,14 +170,14 @@ function view(tableName) {
         case 'emT':
 
             input =
-                `SELECT emT.id, emT.first_name, emT.last_name, roleT.title, deptT.name AS department, roleT.salary, CONCAT(emT.first_name, ' ', emT.last_name) AS 'Manager'
-            FROM emT
+                `SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, roleT.title AS Title, deptT.name AS Department, roleT.salary AS Salary, CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
+            FROM emT e
             JOIN roleT
-            ON emT.role_id = roleT.id
+            ON e.role_id = roleT.id
             JOIN deptT
             ON roleT.department_id = deptT.id
             INNER JOIN emT m
-            ON m.id = emT.manager_id
+            ON e.manager_id = m.id
             ORDER BY Manager`;
 
             break;
@@ -192,7 +190,7 @@ function view(tableName) {
             console.table(results)
         })
 
-   // menu()
+    menu()
 }
 
 function add(tableName) {
@@ -210,7 +208,7 @@ function add(tableName) {
 
                 db.query(inputD)
                 })
-              //  .then(() => { menu()})
+             .then(() => { menu()})
             
 
             break;
@@ -225,7 +223,7 @@ function add(tableName) {
 
                     db.query(inputR)
                 })
-               //.then(() => { menu()})
+            .then(() => { menu()})
 
             break;
         case 'emT': 
@@ -238,7 +236,7 @@ function add(tableName) {
 
                     db.query(inputE)
                 })
-              // .then(() => { menu()})
+             .then(() => { menu()})
                 
             break;
     }
@@ -267,13 +265,13 @@ async function getEmployees() {
             let m = {
 
                 name: rows[i].last_name + ' ' + rows[i].first_name,
-                value: rows.id
+                value: rows[i].id
             }
             managerArr.push(m)
         }
     }
 
-    managerArr.push('none');
+    managerArr.push({ name: 'None', value: null});
 
     addEmQ[3].choices = managerArr;
     updateQ[0].choices = employeeArr;
