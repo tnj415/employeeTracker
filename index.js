@@ -218,7 +218,7 @@ function view(tableName) {
             console.table(results)
         })
 
-    // menu()
+    menu()
 }
 
 function add(tableName) {
@@ -237,7 +237,7 @@ function add(tableName) {
                     db.query(inputD)
 
                 })
-            //.then(() => { menu()})
+            .then(() => { menu()})
 
 
             break;
@@ -253,7 +253,7 @@ function add(tableName) {
                     db.query(inputR)
 
                 })
-            // .then(() => { menu()})
+             .then(() => { menu()})
 
             break;
         case 'emT':
@@ -267,7 +267,7 @@ function add(tableName) {
                     db.query(inputE)
 
                 })
-            // .then(() => { menu()})
+             .then(() => { menu()})
 
             break;
     }
@@ -285,7 +285,7 @@ async function update() {
 
         })
 
-    // .then(() => { menu(); })
+     .then(() => { menu(); })
 }
 
 async function menu() {
@@ -342,7 +342,8 @@ async function menu() {
                 response.action()
 
 
-        }).then(() => { menu() })
+        })
+        //.then(() => { menu() })
 
 
 
