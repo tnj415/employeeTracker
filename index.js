@@ -162,7 +162,7 @@ function view(tableName) {
         case 'roleT':
 
             input =
-                `SELECT id AS ID, title AS Title, salary AS Salary
+                `SELECT roleT.id AS ID, roleT.title AS Title, roleT.salary AS Salary
             FROM roleT`;
 
             break;
@@ -190,7 +190,7 @@ function view(tableName) {
             console.table(results)
         })
 
-    menu()
+   // menu()
 }
 
 function add(tableName) {
@@ -208,7 +208,7 @@ function add(tableName) {
 
                 db.query(inputD)
                 })
-             .then(() => { menu()})
+            // .then(() => { menu()})
             
 
             break;
@@ -223,7 +223,7 @@ function add(tableName) {
 
                     db.query(inputR)
                 })
-            .then(() => { menu()})
+            //.then(() => { menu()})
 
             break;
         case 'emT': 
@@ -236,7 +236,7 @@ function add(tableName) {
 
                     db.query(inputE)
                 })
-             .then(() => { menu()})
+            // .then(() => { menu()})
                 
             break;
     }
