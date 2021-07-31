@@ -22,65 +22,6 @@ db.connect((err) => {
     }
 });
 
-
-async function menu() {
-
-    getDepartments();
-    getRoles();
-    getEmployees();
-
-    inquirer.prompt([
-        {
-            type: 'list',
-            name: 'action',
-            message: 'What would you like to do?',
-            choices: [
-                {
-                    name: 'View all departments',
-                    value: [view, 'deptT']
-                },
-                {
-                    name: 'View all roles',
-                    value: [view, 'roleT']
-                },
-                {
-                    name: 'View all employees',
-                    value: [view, 'emT']
-                },
-                {
-                    name: 'Add a department',
-                    value: [add, 'deptT']
-                },
-                {
-                    name: 'Add a role',
-                    value: [add, 'roleT']
-                },
-                {
-                    name: 'Add an employee',
-                    value: [add, 'emT']
-                },
-                {
-                    name: 'Update an employee role',
-                    value: update
-                },
-                {
-                    name: 'Exit',
-                    value: () =>  {process.exit() }
-                }
-            ]
-        }
-    ])
-        .then((response) => {
-
-            response.action.length === 2 ?
-                response.action[0](response.action[1]) :
-                response.action()
-
-
-        })
-
-}
-
 var addDeptQ = [
     {
         type: 'input',
@@ -91,7 +32,7 @@ var addDeptQ = [
 var addRoleQ = [
     {
         type: 'input',
-        name: 'name',
+        name: 'title',
         message: 'Enter the name of the role: ',
     },
     {
@@ -147,101 +88,6 @@ var updateQ = [
     }
 ]
 
-function view(tableName) {
-
-    var input = '';
-
-    switch (tableName) {
-
-        case 'deptT':
-            input =
-                `SELECT deptT.id AS ID, deptT.name AS Department_Name FROM deptT`;
-
-            break;
-
-        case 'roleT':
-
-            input =
-                `SELECT roleT.id AS ID, roleT.title AS Title, roleT.salary AS Salary
-            FROM roleT`;
-
-            break;
-
-        case 'emT':
-
-            input =
-                `SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, roleT.title AS Title, deptT.name AS Department, roleT.salary AS Salary, CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
-            FROM emT e
-            JOIN roleT
-            ON e.role_id = roleT.id
-            JOIN deptT
-            ON roleT.department_id = deptT.id
-            INNER JOIN emT m
-            ON e.manager_id = m.id
-            ORDER BY Manager`;
-
-            break;
-    }
-
-    db.query(input,
-        function (err, results) {
-            if (err) return console.log(err);
-            console.log()
-            console.table(results)
-        })
-
-   // menu()
-}
-
-function add(tableName) {
-
-    switch (tableName) {
-
-        case 'deptT':
-
-            inquirer.prompt(addDeptQ)
-                .then((response) => {
-                    console.log(response)
-
-                    const inputD = `INSERT INTO deptT (name)
-                VALUES ('${response.name}')`
-
-                db.query(inputD)
-                })
-            // .then(() => { menu()})
-            
-
-            break;
-
-        case 'roleT': 
-
-            inquirer.prompt(addRoleQ)
-                .then((response) => {
-                    console.log(response)
-
-                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
-
-                    db.query(inputR)
-                })
-            //.then(() => { menu()})
-
-            break;
-        case 'emT': 
-
-            inquirer.prompt(addEmQ)
-            .then((response) => {
-                console.log(response)
-
-                    const inputE = `INSERT INTO emT (first_name, last_name, role_id, manager_id) VALUES ('${response.first_name}', '${response.last_name}', '${response.role}', '${response.manager}')`
-
-                    db.query(inputE)
-                })
-            // .then(() => { menu()})
-                
-            break;
-    }
-}
-
 async function getEmployees() {
 
     const select = `SELECT id, last_name, first_name, manager_id FROM emT `;
@@ -255,7 +101,7 @@ async function getEmployees() {
         let e = {
 
             name: rows[i].last_name + ' ' + rows[i].first_name,
-            value: rows.id
+            value: rows[i].id
         }
 
         employeeArr.push(e)
@@ -329,12 +175,107 @@ async function getDepartments() {
     updateQ[1].choices = deptArr;
 }
 
+function view(tableName) {
+
+    var input = '';
+
+    switch (tableName) {
+
+        case 'deptT':
+            input =
+                `SELECT id AS ID, name AS Department_Name FROM deptT`;
+
+            break;
+
+        case 'roleT':
+
+            input =
+                `SELECT id AS ID, title AS Title, salary AS Salary
+            FROM roleT`;
+
+            break;
+
+        case 'emT':
+
+            input =
+                `SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, roleT.title AS Title, deptT.name AS Department, roleT.salary AS Salary, CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
+            FROM emT e
+            LEFT JOIN roleT
+            ON e.role_id = roleT.id
+            LEFT JOIN deptT
+            ON roleT.department_id = deptT.id
+            LEFT JOIN emT m
+            ON e.manager_id = m.id
+            ORDER BY ID`;
+
+            break;
+    }
+
+    db.query(input,
+        function (err, results) {
+            if (err) return console.log(err);
+            console.log()
+            console.table(results)
+        })
+
+    menu()
+}
+
+function add(tableName) {
+
+    switch (tableName) {
+
+        case 'deptT':
+
+            inquirer.prompt(addDeptQ)
+                .then((response) => {
+                    console.log(response)
+
+                    const inputD = `INSERT INTO deptT (name)
+                VALUES ('${response.name}')`
+
+                db.query(inputD)
+                })
+             .then(() => { menu()})
+            
+
+            break;
+
+        case 'roleT': 
+
+            inquirer.prompt(addRoleQ)
+                .then((response) => {
+                    console.log(response)
+
+                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
+
+                    db.query(inputR)
+                })
+            .then(() => { menu()})
+
+            break;
+        case 'emT': 
+
+            inquirer.prompt(addEmQ)
+            .then((response) => {
+                console.log(response)
+
+                    const inputE = `INSERT INTO emT (first_name, last_name, role_id, manager_id) VALUES ('${response.first_name}', '${response.last_name}', '${response.role}', '${response.manager}')`
+
+                    db.query(inputE)
+                })
+             .then(() => { menu()})
+                
+            break;
+    }
+}
+
 async function update() {
 
     inquirer.prompt(updateQ)
         .then((response) => {
-
-            const update = `UPDATE emT SET role_id = ${response.role} WHERE id =${response.name}`;
+console.log(response)
+            const update = `UPDATE emT SET role_id = ${response.role} WHERE emT.id =${response.name}`;
 
             db.query(update,
 
@@ -347,7 +288,65 @@ async function update() {
             )
         })
 
-      // .then(() => { menu(); })
+      .then(() => { menu(); })
+}
+
+async function menu() {
+
+    getDepartments();
+    getRoles();
+    getEmployees();
+
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+                {
+                    name: 'View all departments',
+                    value: [view, 'deptT']
+                },
+                {
+                    name: 'View all roles',
+                    value: [view, 'roleT']
+                },
+                {
+                    name: 'View all employees',
+                    value: [view, 'emT']
+                },
+                {
+                    name: 'Add a department',
+                    value: [add, 'deptT']
+                },
+                {
+                    name: 'Add a role',
+                    value: [add, 'roleT']
+                },
+                {
+                    name: 'Add an employee',
+                    value: [add, 'emT']
+                },
+                {
+                    name: 'Update an employee role',
+                    value: update
+                },
+                {
+                    name: 'Exit',
+                    value: () =>  {process.exit() }
+                }
+            ]
+        }
+    ])
+        .then((response) => {
+
+            response.action.length === 2 ?
+                response.action[0](response.action[1]) :
+                response.action()
+
+
+        })
+
 }
 
 menu();
