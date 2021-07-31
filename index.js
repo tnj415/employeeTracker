@@ -117,7 +117,7 @@ async function getEmployees() {
         }
     }
 
-    managerArr.push({ name: 'None', value: null});
+    managerArr.push({ name: 'None', value: null });
 
     addEmQ[3].choices = managerArr;
     updateQ[0].choices = employeeArr;
@@ -134,15 +134,15 @@ async function getRoles() {
     for (let i in rows) {
         let q = {
 
-        name: rows[i].title,
-        value: rows[i].department_id
+            name: rows[i].title,
+            value: rows[i].department_id
         }
 
         let e = {
 
             name: rows[i].title,
             value: rows[i].id
-            }
+        }
 
         roleArr.push(q)
         roleEArr.push(e)
@@ -163,8 +163,8 @@ async function getDepartments() {
     for (let i in rows) {
 
         let q = {
-        name: rows[i].name,
-        value: rows[i].id
+            name: rows[i].name,
+            value: rows[i].id
         }
 
         deptArr.push(q)
@@ -200,7 +200,7 @@ function view(tableName) {
             input =
                 `SELECT e.id AS ID, e.first_name AS First_Name, e.last_name AS Last_Name, roleT.title AS Title, deptT.name AS Department, roleT.salary AS Salary, CONCAT(m.first_name, ' ', m.last_name) AS 'Manager'
             FROM emT e
-            LEFT JOIN roleT
+            JOIN roleT
             ON e.role_id = roleT.id
             LEFT JOIN deptT
             ON roleT.department_id = deptT.id
@@ -218,7 +218,7 @@ function view(tableName) {
             console.table(results)
         })
 
-    menu()
+    // menu()
 }
 
 function add(tableName) {
@@ -234,14 +234,15 @@ function add(tableName) {
                     const inputD = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
 
-                db.query(inputD)
+                    db.query(inputD)
+
                 })
-             .then(() => { menu()})
-            
+            //.then(() => { menu()})
+
 
             break;
 
-        case 'roleT': 
+        case 'roleT':
 
             inquirer.prompt(addRoleQ)
                 .then((response) => {
@@ -250,22 +251,24 @@ function add(tableName) {
                     const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
 
                     db.query(inputR)
+
                 })
-            .then(() => { menu()})
+            // .then(() => { menu()})
 
             break;
-        case 'emT': 
+        case 'emT':
 
             inquirer.prompt(addEmQ)
-            .then((response) => {
-                console.log(response)
+                .then((response) => {
+                    console.log(response)
 
                     const inputE = `INSERT INTO emT (first_name, last_name, role_id, manager_id) VALUES ('${response.first_name}', '${response.last_name}', '${response.role}', '${response.manager}')`
 
                     db.query(inputE)
+
                 })
-             .then(() => { menu()})
-                
+            // .then(() => { menu()})
+
             break;
     }
 }
@@ -274,21 +277,15 @@ async function update() {
 
     inquirer.prompt(updateQ)
         .then((response) => {
-console.log(response)
+            console.log(response)
             const update = `UPDATE emT SET role_id = ${response.role} WHERE emT.id =${response.name}`;
 
-            db.query(update,
+            db.query(update)
 
-                function (err, results) {
 
-                    if (err) {
-                        console.log(err);
-                    }
-                }
-            )
         })
 
-      .then(() => { menu(); })
+    // .then(() => { menu(); })
 }
 
 async function menu() {
@@ -333,7 +330,7 @@ async function menu() {
                 },
                 {
                     name: 'Exit',
-                    value: () =>  {process.exit() }
+                    value: () => { process.exit() }
                 }
             ]
         }
@@ -345,7 +342,9 @@ async function menu() {
                 response.action()
 
 
-        })
+        }).then(() => { menu() })
+
+
 
 }
 
