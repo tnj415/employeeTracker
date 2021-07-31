@@ -109,12 +109,12 @@ var addRoleQ = [
 var addEmQ = [
     {
         type: 'input',
-        name: 'nameFirst',
+        name: 'first_name',
         message: 'Enter the employee\'s first name: '
     },
     {
         type: 'input',
-        name: 'nameLast',
+        name: 'last_name',
         message: 'Enter the employee\'s last name: '
     },
     {
@@ -192,7 +192,7 @@ function view(tableName) {
             console.table(results)
         })
 
-    menu()
+   // menu()
 }
 
 function add(tableName) {
@@ -203,13 +203,14 @@ function add(tableName) {
 
             inquirer.prompt(addDeptQ)
                 .then((response) => {
+                    console.log(response)
 
                     const inputD = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
 
                 db.query(inputD)
                 })
-                .then(() => { menu()})
+              //  .then(() => { menu()})
             
 
             break;
@@ -218,24 +219,26 @@ function add(tableName) {
 
             inquirer.prompt(addRoleQ)
                 .then((response) => {
+                    console.log(response)
 
                     const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
 
                     db.query(inputR)
                 })
-                .then(() => { menu()})
+               //.then(() => { menu()})
 
             break;
         case 'emT': 
 
             inquirer.prompt(addEmQ)
             .then((response) => {
+                console.log(response)
 
-                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`
+                    const inputE = `INSERT INTO emT (first_name, last_name, role_id, manager_id) VALUES ('${response.first_name}', '${response.last_name}', '${response.role}', '${response.manager}')`
 
                     db.query(inputE)
                 })
-                .then(() => { menu()})
+              // .then(() => { menu()})
                 
             break;
     }
@@ -251,11 +254,26 @@ async function getEmployees() {
 
     for (let i in rows) {
 
-        employeeArr.push(rows[i].last_name + ' ' + rows[i].first_name)
+        let e = {
 
-        if (rows[i].manager_id === null)
-            managerArr.push(rows[i].last_name + ' ' + rows[i].first_name)
+            name: rows[i].last_name + ' ' + rows[i].first_name,
+            value: rows.id
+        }
+
+        employeeArr.push(e)
+
+        if (rows[i].manager_id === null) {
+
+            let m = {
+
+                name: rows[i].last_name + ' ' + rows[i].first_name,
+                value: rows.id
+            }
+            managerArr.push(m)
+        }
     }
+
+    managerArr.push('none');
 
     addEmQ[3].choices = managerArr;
     updateQ[0].choices = employeeArr;
@@ -263,17 +281,30 @@ async function getEmployees() {
 
 async function getRoles() {
 
-    const select = `SELECT id, title FROM roleT `;
+    const select = `SELECT id, title, department_id FROM roleT `;
     let roleArr = []
+    let roleEArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
 
     for (let i in rows) {
+        let q = {
 
-        roleArr.push(rows[i].title)
+        name: rows[i].title,
+        value: rows[i].department_id
+        }
+
+        let e = {
+
+            name: rows[i].title,
+            value: rows[i].id
+            }
+
+        roleArr.push(q)
+        roleEArr.push(e)
     }
 
-    addEmQ[2].choices = roleArr;
+    addEmQ[2].choices = roleEArr;
     addRoleQ[0].choices = roleArr;
     updateQ[1].choices = roleArr;
 }
@@ -287,7 +318,12 @@ async function getDepartments() {
 
     for (let i in rows) {
 
-        deptArr.push(rows[i].name);
+        let q = {
+        name: rows[i].name,
+        value: rows[i].id
+        }
+
+        deptArr.push(q)
     }
 
     addRoleQ[2].choices = deptArr;
@@ -313,7 +349,7 @@ async function update() {
             )
         })
 
-        .then(() => { menu(); })
+      // .then(() => { menu(); })
 }
 
-//menu();
+menu();
