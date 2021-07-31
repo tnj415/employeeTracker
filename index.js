@@ -65,7 +65,7 @@ async function menu() {
                 },
                 {
                     name: 'Exit',
-                    value: () =>  {return }
+                    value: () =>  {process.exit() }
                 }
             ]
         }
