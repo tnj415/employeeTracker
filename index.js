@@ -25,6 +25,10 @@ db.connect((err) => {
 
 async function menu() {
 
+    getDepartments();
+    getRoles();
+    getEmployees();
+
     inquirer.prompt([
         {
             type: 'list',
@@ -193,27 +197,22 @@ function view(tableName) {
 
 function add(tableName) {
 
-     getDepartments();
-     getRoles();
-     getEmployees();
-
-    var input = '';
-
-
     switch (tableName) {
 
-        case 'deptT': 
+        case 'deptT':
 
             inquirer.prompt(addDeptQ)
                 .then((response) => {
 
                     console.log("entered then at deptT")
 
-                    input = `INSERT INTO deptT (name)
+                    const inputD = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
-                })
-                
 
+                db.query(inputD)
+                })
+                .then(() => { menu()})
+            
 
             break;
 
@@ -224,9 +223,11 @@ function add(tableName) {
 
                     console.log("entered then at roleT")
 
-                    input = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
+                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
+
+                    db.query(inputR)
                 })
-           
+                .then(() => { menu()})
 
             break;
         case 'emT': 
@@ -236,21 +237,14 @@ function add(tableName) {
 
                 console.log("entered then at emT")
 
-                    input = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`
+                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`
+
+                    db.query(inputE)
                 })
+                .then(() => { menu()})
                 
             break;
     }
-
-    
-    db.query(input,
-        function (err) {
-            if (err) return console.log(err);
-            console.log()
-            console.table("finished switch statement")
-        })
-
-    menu()
 }
 
 async function getEmployees() {
@@ -309,8 +303,8 @@ async function getDepartments() {
 
 async function update() {
 
-    getEmployees(); 
-    getRoles();
+    // getEmployees(); 
+    // getRoles();
 
     inquirer.prompt(updateQ)
         .then((response) => {
