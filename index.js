@@ -25,10 +25,6 @@ db.connect((err) => {
 
 async function menu() {
 
-    getEmployees();
-    getRoles();
-    getDepartments();
-
     inquirer.prompt([
         {
             type: 'list',
@@ -90,10 +86,9 @@ var addDeptQ = [
 ]
 var addRoleQ = [
     {
-        type: 'list',
+        type: 'input',
         name: 'name',
-        message: 'Select the name of the role: ',
-        choices: []
+        message: 'Enter the name of the role: ',
     },
     {
         type: 'input',
@@ -148,7 +143,7 @@ var updateQ = [
     }
 ]
 
-var managerList = []
+//var managerList = []
 
 function view(tableName) {
 
@@ -158,7 +153,7 @@ function view(tableName) {
 
         case 'deptT':
             input =
-                `SELECT * FROM ${tableName}`;
+                `SELECT * FROM deptT`;
 
             break;
 
@@ -166,11 +161,11 @@ function view(tableName) {
 
             input =
                 `SELECT id, title, salary
-        FROM roleT`;
+            FROM roleT`;
 
             break;
-        case 'emT':
 
+        case 'emT':
 
             input =
                 `SELECT emT.id, emT.first_name, emT.last_name, roleT.title, deptT.name AS department, roleT.salary, CONCAT(emT.first_name, ' ', emT.last_name) AS 'Manager'
@@ -183,15 +178,10 @@ function view(tableName) {
             ON m.id = emT.manager_id
             ORDER BY Manager`;
 
-
-
             break;
-
     }
 
-
     db.query(input,
-
         function (err, results) {
             if (err) return console.log(err);
             console.log()
@@ -203,55 +193,64 @@ function view(tableName) {
 
 function add(tableName) {
 
+     getDepartments();
+     getRoles();
+     getEmployees();
+
+    var input = '';
+
+
     switch (tableName) {
 
-        case 'deptT':
+        case 'deptT': 
 
             inquirer.prompt(addDeptQ)
                 .then((response) => {
 
-                    const inputD = `INSERT INTO deptT (name)
+                    console.log("entered then at deptT")
+
+                    input = `INSERT INTO deptT (name)
                 VALUES ('${response.name}')`
-
-                    db.query(inputD)
-
                 })
-                .then(() => {
-                    menu()
-                })
+                
 
 
             break;
 
-        case 'roleT':
+        case 'roleT': 
+
             inquirer.prompt(addRoleQ)
                 .then((response) => {
 
-                    const inputR = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
+                    console.log("entered then at roleT")
 
-                    db.query(inputR)
-
+                    input = `INSERT INTO roleT (title, salary, department_id) VALUES ('${response.title}', ${response.salary}, '${response.department}')`
                 })
-                .then(() => {
-                    menu()
-                })
+           
 
             break;
-        case 'emT':
+        case 'emT': 
+
             inquirer.prompt(addEmQ)
-                .then((response) => {
+            .then((response) => {
 
-                    const inputE = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.nameFirst}', '${response.nameLast}', '${response.role}', '${response.manager}')`
+                console.log("entered then at emT")
 
-                    db.query(inputE)
-
+                    input = `INSERT INTO emT (nameFirst, nameLast, role, manager) VALUES ('${response.first_name}', '${response.last_name}', '${response.role_id}', '${response.manager_id}')`
                 })
-                .then(() => {
-                    menu()
-                })
+                
             break;
-
     }
+
+    
+    db.query(input,
+        function (err) {
+            if (err) return console.log(err);
+            console.log()
+            console.table("finished switch statement")
+        })
+
+    menu()
 }
 
 async function getEmployees() {
@@ -261,37 +260,15 @@ async function getEmployees() {
     let managerArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
-    //console.log(rows);
+
     for (let i in rows) {
 
         employeeArr.push(rows[i].last_name + ' ' + rows[i].first_name)
 
-        if (rows[i].manager_id === null) 
+        if (rows[i].manager_id === null)
             managerArr.push(rows[i].last_name + ' ' + rows[i].first_name)
-        // const q = {
-        //     name: rows[i].last_name + ' ' + rows[i].first_name,
-        //     value: rows[i].id
-        // }
-        // employeeArr.push(q);
-
-        // const r = {
-        //     name: rows[i].last_name + ' ' + rows[i].first_name,
-        //     value: rows[i].id
-        // }
-        // if (rows[i].manager_id === null) managerArr.push(r)
-
-        // if (managerList.length === 0 ||
-        //     i > 0 && managerList[i - 1].value !== r.value) {
-        //     managerList.push(r)
-            // console.log("r.value = ", r.value)
-            // console.log("managerList[" + i + "] = ", managerList[i])
-            // console.log("managerList[" + i + "].name = ", managerList[i].name)
-            // console.log("managerList[" + i + "].value = ", managerList[i].value)
-        //}
     }
-    // console.log (list);
-    // console.log("managerList[i] === ", managerList[i])
-    // console.log("managerList[1].value === ", managerList[1].value)
+
     addEmQ[3].choices = managerArr;
     updateQ[0].choices = employeeArr;
 }
@@ -302,16 +279,11 @@ async function getRoles() {
     let roleArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
-    //console.log(rows);
+
     for (let i in rows) {
-        // const q = {
-        //     name: rows[i].title,
-        //     value: rows[i].id
-        // }
-        // roleArr.push(q);
+
         roleArr.push(rows[i].title)
     }
-    /// console.log (roleArr);
 
     addEmQ[2].choices = roleArr;
     addRoleQ[0].choices = roleArr;
@@ -324,25 +296,21 @@ async function getDepartments() {
     let deptArr = []
     const selection = await db.promise().execute(select);
     const rows = selection[0];
-    //console.log(rows);
+
     for (let i in rows) {
-        //const q = {
-            //name: rows[i].name,
-            //value: rows[i].id
-       // }
-        //deptArr.push(q);
+
         deptArr.push(rows[i].name);
     }
-    
+
     addRoleQ[2].choices = deptArr;
     addDeptQ[0].choices = deptArr;
     updateQ[1].choices = deptArr;
-    // console.log("roleArr: ", roleArr);
-    // console.log("addDeptQ[0]: ", addDeptQ[0])
-    // console.log("addDeptQ[0].choices: ", addDeptQ[0].choices)
 }
 
 async function update() {
+
+    getEmployees(); 
+    getRoles();
 
     inquirer.prompt(updateQ)
         .then((response) => {
